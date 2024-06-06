@@ -1,0 +1,16 @@
+body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+  }
+  
+  #qrcode-container {
+    /* Добавьте стили для контейнера QR-кода, если нужно */
+  }
+  
+  #qrcode {
+    /* Добавьте стили для самого QR-кода, если нужно */
+  }
+  
