@@ -9,6 +9,7 @@ function generateRandomCode() {
 
   previousCode = newCode;
   return newCode;
+
 }
 
 function generateQRCode() {
@@ -23,6 +24,9 @@ function generateQRCode() {
       width: 256,
       height: 256,
     });
+    // Добавляем атрибут data-qrcode с текстом QR-кода
+    qrcodeContainer.setAttribute('data-qrcode', data); 
+    
   } catch (error) {
     console.error("Ошибка при генерации QR-кода:", error);
     qrcodeContainer.innerHTML = '<p>Не удалось сгенерировать QR-код</p>';
