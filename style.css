@@ -4,13 +4,29 @@ body {
     align-items: center;
     height: 100vh;
     margin: 0;
+    
   }
-  
-  #qrcode-container {
-    /* Добавьте стили для контейнера QR-кода, если нужно */
+
+body::before {
+    content: '';
+    background-image: url('pku_logo.jpg'); 
+    background-color: black;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: contain;
+    opacity: 0.5; 
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: -1; 
   }
-  
-  #qrcode {
-    /* Добавьте стили для самого QR-кода, если нужно */
+
+.block {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
   }
   

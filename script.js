@@ -1,25 +1,21 @@
 const qrcodeContainer = document.getElementById('qrcode-container');
+let previousCode = "";
 
-const words = ["apple", "banana", "cat", "dog", "elephant", "fish", "grape", "house", "ice", "jungle"];
-let previousText = "";
-
-function generateRandomText() {
-  let newText;
+function generateRandomCode() {
+  let newCode;
   do {
-    const randomIndex1 = Math.floor(Math.random() * words.length);
-    const randomIndex2 = Math.floor(Math.random() * words.length);
-    newText = words[randomIndex1] + " " + words[randomIndex2];
-  } while (newText === previousText);
+    newCode = Math.floor(100000000000 + Math.random() * 900000000000).toString(); // 12-значное число
+  } while (newCode === previousCode);
 
-  previousText = newText;
-  return newText;
+  previousCode = newCode;
+  return newCode;
 }
 
 function generateQRCode() {
-  const data = generateRandomText();
-  console.log("Текст QR-кода:", data);
+  const data = generateRandomCode();
+  console.log("Код QR-кода:", data);
 
-  qrcodeContainer.innerHTML = '';
+  qrcodeContainer.innerHTML = ''; // Очищаем контейнер перед генерацией нового QR-кода
 
   try {
     new QRCode(qrcodeContainer, {
