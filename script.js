@@ -24,12 +24,8 @@ function generateQRCode() {
     height: 256,
   });
 
-  currentQRCodeData = data;
-  window.currentQRCodeData = currentQRCodeData; // Make it global
-
-  // Dispatch a custom event to signal that the QR code is ready
-  const qrCodeReadyEvent = new Event('qrCodeReady');
-  document.dispatchEvent(qrCodeReadyEvent); 
+  // Store QR code data in localStorage
+  localStorage.setItem('currentQRCodeData', data); 
 }
 
 // Generate the initial QR code
