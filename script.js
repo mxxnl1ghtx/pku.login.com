@@ -24,12 +24,33 @@ function generateQRCode() {
     height: 256,
   });
 
-  // Store QR code data in localStorage
-  localStorage.setItem('currentQRCodeData', data); 
+  currentQRCodeData = data;
+  window.currentQRCodeData = currentQRCodeData; // Make it global
+
+  // Dispatch the 'qrCodeReady' event
+  document.dispatchEvent(new Event('qrCodeReady'));
 }
 
-// Generate the initial QR code
-generateQRCode();
+// Check if a QR code already exists in localStorage
+if (!localStorage.getItem('currentQRCodeData')) {
+  // Generate the initial QR code if it doesn't exist
+  generateQRCode();
+} else {
+  // If it exists, retrieve it and display it
+  currentQRCodeData = localStorage.getItem('currentQRCodeData');
+  window.currentQRCodeData = currentQRCodeData;
 
-// Start the interval for updates
+  qrcodeContainer.innerHTML = ''; 
+
+  new QRCode(qrcodeContainer, {
+    text: currentQRCodeData,
+    width: 256,
+    height: 256,
+  });
+
+  // Dispatch the 'qrCodeReady' event to notify Flutter
+  document.dispatchEvent(new Event('qrCodeReady'));
+}
+
+// Start the interval for updates (after the initial generation or retrieval)
 setInterval(generateQRCode, 5 * 60 * 1000); // Update every 5 minutes
