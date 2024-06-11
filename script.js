@@ -1,6 +1,7 @@
-const qrcodeContainer = document.getElementById('qrcode-container');
 let db; // IndexedDB database
-let currentQRCodeData = "";
+let currentQRCodeData = ""; // Global variable for QR code data
+
+const qrcodeContainer = document.getElementById('qrcode-container');
 
 function generateRandomCode() {
     let newCode;
@@ -12,33 +13,40 @@ function generateRandomCode() {
 }
 
 function generateQRCode() {
-    currentQRCodeData = generateRandomCode();
-    window.currentQRCodeData = currentQRCodeData; // Make it global
-    console.log("Код QR-кода:", currentQRCodeData);
+    // Retrieve QR code data from IndexedDB
+    const transaction = db.transaction(['qrCodes'], 'readonly');
+    const objectStore = transaction.objectStore('qrCodes');
+    const getRequest = objectStore.get('currentQRCode');
 
-    qrcodeContainer.innerHTML = ''; 
+    getRequest.onsuccess = function(event) {
+        if (event.target.result) {
+            currentQRCodeData = event.target.result.data;
+        } else {
+            currentQRCodeData = generateRandomCode(); // Generate if not found
+            // Store the newly generated QR code in IndexedDB
+            const putTransaction = db.transaction(['qrCodes'], 'readwrite');
+            const putObjectStore = putTransaction.objectStore('qrCodes');
+            putObjectStore.put({ id: 'currentQRCode', data: currentQRCodeData });
+        }
 
-    new QRCode(qrcodeContainer, {
-        text: currentQRCodeData,
-        width: 256,
-        height: 256,
-    });
+        window.currentQRCodeData = currentQRCodeData; // Make it global
+        console.log("Код QR-кода:", currentQRCodeData);
 
-    // Store QR code data in IndexedDB
-    if (db) {
-        const transaction = db.transaction(['qrCodes'], 'readwrite');
-        const objectStore = transaction.objectStore('qrCodes');
-        objectStore.put({ id: 'currentQRCode', data: currentQRCodeData });
+        qrcodeContainer.innerHTML = ''; // Clear the container
 
-        transaction.oncomplete = function() {
-            console.log('QR code data stored in IndexedDB');
-            document.dispatchEvent(new Event('qrCodeReady'));
-        };
+        new QRCode(qrcodeContainer, {
+            text: currentQRCodeData,
+            width: 256,
+            height: 256,
+        });
 
-        transaction.onerror = function(event) {
-            console.error('IndexedDB transaction error:', event.target.error);
-        };
-    }
+        // Dispatch the 'qrCodeReady' event to notify Flutter (if needed)
+        document.dispatchEvent(new Event('qrCodeReady'));
+    };
+
+    getRequest.onerror = function(event) {
+        console.error('IndexedDB get error:', event.target.error);
+    };
 }
 
 // Open or create IndexedDB database
@@ -55,28 +63,9 @@ request.onupgradeneeded = function(event) {
 
 request.onsuccess = function(event) {
     db = event.target.result;
-
-    // Check if QR code data exists in IndexedDB
-    const transaction = db.transaction(['qrCodes'], 'readonly');
-    const objectStore = transaction.objectStore('qrCodes');
-    const getRequest = objectStore.get('currentQRCode');
-
-    getRequest.onsuccess = function(event) {
-        if (event.target.result) {
-            currentQRCodeData = event.target.result.data;
-            window.currentQRCodeData = currentQRCodeData;
-            console.log('QR code data retrieved from IndexedDB:', currentQRCodeData);
-        } else {
-            console.log('QR code data not found in IndexedDB. Generating new QR code.');
-        }
-        generateQRCode(); // Generate QR code after checking IndexedDB
-    };
-
-    getRequest.onerror = function(event) {
-        console.error('IndexedDB get error:', event.target.error);
-        generateQRCode(); // Generate QR code even if there's an error
-    };
+    generateQRCode(); // Generate QR code after DB is ready
 };
+
 
 // Update the QR code data and regenerate the QR code every 5 minutes
 setInterval(generateQRCode, 5 * 60 * 1000); 
