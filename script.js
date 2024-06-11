@@ -1,37 +1,40 @@
 const qrcodeContainer = document.getElementById('qrcode-container');
 let previousCode = "";
+let currentQRCodeData = ""; // Global variable for QR code data
 
 function generateRandomCode() {
-  let newCode;
-  do {
-    newCode = Math.floor(100000000000 + Math.random() * 900000000000).toString(); // 12-значное число
-  } while (newCode === previousCode);
+    let newCode;
+    do {
+        newCode = Math.floor(100000000000 + Math.random() * 900000000000).toString(); // 12-digit number
+    } while (newCode === previousCode);
 
-  previousCode = newCode;
-  return newCode;
-
+    previousCode = newCode;
+    return newCode;
 }
 
 function generateQRCode() {
-  const data = generateRandomCode();
-  console.log("Код QR-кода:", data);
+    return new Promise((resolve) => {
+        const data = generateRandomCode();
+        console.log("Код QR-кода:", data);
 
-  qrcodeContainer.innerHTML = ''; // Очищаем контейнер перед генерацией нового QR-кода
+        qrcodeContainer.innerHTML = ''; 
 
-  try {
-    new QRCode(qrcodeContainer, {
-      text: data,
-      width: 256,
-      height: 256,
+        // Create and render the QR code
+        new QRCode(qrcodeContainer, {
+            text: data,
+            width: 256,
+            height: 256,
+        });
+
+        // Update the global variable and resolve the Promise
+        currentQRCodeData = data;
+        window.currentQRCodeData = currentQRCodeData; // Make it global
+        resolve();
     });
-    // Добавляем атрибут data-qrcode с текстом QR-кода
-    qrcodeContainer.setAttribute('data-qrcode', data); 
-    
-  } catch (error) {
-    console.error("Ошибка при генерации QR-кода:", error);
-    qrcodeContainer.innerHTML = '<p>Не удалось сгенерировать QR-код</p>';
-  }
 }
 
+// Generate the initial QR code
 generateQRCode();
-setInterval(generateQRCode, 5 * 60 * 1000); // Обновляем QR-код каждые 5 минут
+
+// Start the interval for updates
+setInterval(generateQRCode, 5 * 60 * 1000); // Update every 5 minutes
