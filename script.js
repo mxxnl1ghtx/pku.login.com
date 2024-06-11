@@ -13,24 +13,23 @@ function generateRandomCode() {
 }
 
 function generateQRCode() {
-    return new Promise((resolve) => {
-        const data = generateRandomCode();
-        console.log("Код QR-кода:", data);
+  const data = generateRandomCode();
+  console.log("Код QR-кода:", data);
 
-        qrcodeContainer.innerHTML = ''; 
+  qrcodeContainer.innerHTML = ''; 
 
-        // Create and render the QR code
-        new QRCode(qrcodeContainer, {
-            text: data,
-            width: 256,
-            height: 256,
-        });
+  new QRCode(qrcodeContainer, {
+    text: data,
+    width: 256,
+    height: 256,
+  });
 
-        // Update the global variable and resolve the Promise
-        currentQRCodeData = data;
-        window.currentQRCodeData = currentQRCodeData; // Make it global
-        resolve();
-    });
+  currentQRCodeData = data;
+  window.currentQRCodeData = currentQRCodeData; // Make it global
+
+  // Dispatch a custom event to signal that the QR code is ready
+  const qrCodeReadyEvent = new Event('qrCodeReady');
+  document.dispatchEvent(qrCodeReadyEvent); 
 }
 
 // Generate the initial QR code
