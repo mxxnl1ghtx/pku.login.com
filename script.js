@@ -1,7 +1,5 @@
-let db; // IndexedDB database
-let currentQRCodeData = ""; // Global variable for QR code data
-
 const qrcodeContainer = document.getElementById('qrcode-container');
+let currentQRCodeData = "";
 
 function generateRandomCode() {
     let newCode;
@@ -13,59 +11,30 @@ function generateRandomCode() {
 }
 
 function generateQRCode() {
-    // Retrieve QR code data from IndexedDB
-    const transaction = db.transaction(['qrCodes'], 'readonly');
-    const objectStore = transaction.objectStore('qrCodes');
-    const getRequest = objectStore.get('currentQRCode');
 
-    getRequest.onsuccess = function(event) {
-        if (event.target.result) {
-            currentQRCodeData = event.target.result.data;
-        } else {
-            currentQRCodeData = generateRandomCode(); // Generate if not found
-            // Store the newly generated QR code in IndexedDB
-            const putTransaction = db.transaction(['qrCodes'], 'readwrite');
-            const putObjectStore = putTransaction.objectStore('qrCodes');
-            putObjectStore.put({ id: 'currentQRCode', data: currentQRCodeData });
-        }
+    // Retrieve or generate QR code data
+    currentQRCodeData = localStorage.getItem('qrCodeData') || generateRandomCode();
 
-        window.currentQRCodeData = currentQRCodeData; // Make it global
-        console.log("Код QR-кода:", currentQRCodeData);
+    // Store QR code data in localStorage
+    localStorage.setItem('qrCodeData', currentQRCodeData);
 
-        qrcodeContainer.innerHTML = ''; // Clear the container
+    window.currentQRCodeData = currentQRCodeData; // Make it global
+    console.log("Код QR-кода:", currentQRCodeData);
 
-        new QRCode(qrcodeContainer, {
-            text: currentQRCodeData,
-            width: 256,
-            height: 256,
-        });
+    qrcodeContainer.innerHTML = ''; 
 
-        // Dispatch the 'qrCodeReady' event to notify Flutter (if needed)
-        document.dispatchEvent(new Event('qrCodeReady'));
-    };
+    new QRCode(qrcodeContainer, {
+        text: currentQRCodeData,
+        width: 256,
+        height: 256,
+    });
 
-    getRequest.onerror = function(event) {
-        console.error('IndexedDB get error:', event.target.error);
-    };
+    // Dispatch the 'qrCodeReady' event to notify Flutter (if needed)
+    document.dispatchEvent(new Event('qrCodeReady'));
 }
 
-// Open or create IndexedDB database
-const request = indexedDB.open('QRCodeDB', 1);
-
-request.onerror = function(event) {
-    console.error('IndexedDB error:', event.target.error);
-};
-
-request.onupgradeneeded = function(event) {
-    db = event.target.result;
-    db.createObjectStore('qrCodes', { keyPath: 'id' });
-};
-
-request.onsuccess = function(event) {
-    db = event.target.result;
-    generateQRCode(); // Generate QR code after DB is ready
-};
-
+// Generate the initial QR code or retrieve from localStorage
+generateQRCode();
 
 // Update the QR code data and regenerate the QR code every 5 minutes
 setInterval(generateQRCode, 5 * 60 * 1000); 
